@@ -180,26 +180,34 @@ body.dragging .rail{cursor:grabbing}
 
 .detail-panel{
   flex:1;min-width:0;height:100%;overflow-y:auto;
-  padding:clamp(70px,9vw,110px) clamp(36px,5vw,72px) 60px;
+  padding:clamp(50px,7vw,90px) 0 60px;
   display:flex;flex-direction:column;
-  gap:clamp(18px,2.4vw,30px);
+  align-items:center;
+  gap:clamp(16px,2.2vw,28px);
 }
 .hero-wrap{
-  width:100%;aspect-ratio:16/9;flex-shrink:0;overflow:hidden;
+  width:calc(100% - clamp(28px,3.5vw,52px)*2);
+  aspect-ratio:16/9;flex-shrink:0;overflow:hidden;
 }
 .hero-bg{width:100%;height:100%}
 
 .hero-title{
   font-family:var(--display);
-  font-size:clamp(24px,3.5vw,52px);
+  font-size:clamp(22px,3.2vw,48px);
   letter-spacing:-.015em;line-height:1;color:#fff;
+  text-align:center;
+  width:calc(100% - clamp(28px,3.5vw,52px)*2);
 }
 .hero-summary{
   font-family:var(--util);
   font-size:clamp(13px,1vw,15px);
   line-height:1.8;color:rgba(255,255,255,.48);
-  letter-spacing:.01em;max-width:60ch;
+  letter-spacing:.01em;
+  text-align:center;
+  width:calc(100% - clamp(28px,3.5vw,52px)*2);
+  max-width:58ch;
 }
+.stage.list-mode .wordmark{opacity:0;pointer-events:none}
 
 /* ---------- chrome ---------- */
 .corner{
@@ -244,7 +252,7 @@ body.dragging .rail{cursor:grabbing}
 
       <article class="card">
         <div class="media" style="background:linear-gradient(140deg,#1c0c14 0%,#2e1222 60%,#180a10 100%)"></div>
-        <h2 class="caption">DRAMA</h2>
+        <h2 class="caption">THE DRAMA</h2>
       </article>
 
       <article class="card">
@@ -280,8 +288,8 @@ body.dragging .rail{cursor:grabbing}
 (function(){
   var films = [
     {
-      title: 'DRAMA',
-      caption: 'DRAMA',
+      title: 'THE DRAMA',
+      caption: 'THE DRAMA',
       bg: 'linear-gradient(140deg,#1c0c14 0%,#2e1222 60%,#180a10 100%)',
       summary: 'A quiet and arresting portrait of performance, longing, and the weight of artistic ambition. The camera lingers on faces, silences, and the spaces between words.'
     },
@@ -305,6 +313,7 @@ body.dragging .rail{cursor:grabbing}
     btnList.classList.remove('active');
     carouselView.style.display = '';
     listView.classList.remove('active');
+    stage.classList.remove('list-mode');
     closeCard();
   }
   function showList(){
@@ -312,6 +321,7 @@ body.dragging .rail{cursor:grabbing}
     btnCarousel.classList.remove('active');
     carouselView.style.display = 'none';
     listView.classList.add('active');
+    stage.classList.add('list-mode');
   }
   btnCarousel.addEventListener('click', showCarousel);
   btnList.addEventListener('click', showList);
