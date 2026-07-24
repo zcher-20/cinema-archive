@@ -1,7 +1,10 @@
+
 # Cinema Archive
 
 A single-page film archive. Twenty-four stills in a horizontal row, drag to move
 through them, click one to bring it to centre and open it.
+
+<img width="890" height="622" alt="Screenshot 2026-07-24 at 4 17 15 PM" src="https://github.com/user-attachments/assets/b494454e-47a7-4fab-8f34-b365da857f14" />
 
 ## Running it
 
