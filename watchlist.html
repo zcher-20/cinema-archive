@@ -291,15 +291,35 @@ body.dragging .rail{cursor:grabbing}
       title: 'THE DRAMA',
       caption: 'THE DRAMA',
       bg: 'linear-gradient(140deg,#1c0c14 0%,#2e1222 60%,#180a10 100%)',
+      dataUrl: '',
       summary: 'A quiet and arresting portrait of performance, longing, and the weight of artistic ambition. The camera lingers on faces, silences, and the spaces between words.'
     },
     {
       title: 'ALMOST FAMOUS',
       caption: 'ALMOST<br>FAMOUS',
       bg: 'linear-gradient(140deg,#0c0c1e 0%,#161438 60%,#0a0a16 100%)',
+      dataUrl: '',
       summary: 'A fifteen-year-old is hired by Rolling Stone to follow an up-and-coming rock band in the early 1970s. Part road movie, part coming-of-age story — a love letter to music and the people who live for it.'
     }
   ];
+
+  /* pull images from archive and remove those entries from the archive */
+  (function(){
+    try {
+      var custom = JSON.parse(localStorage.getItem('cinema-custom') || '[]');
+      var watchTitles = films.map(function(f){ return f.title.toUpperCase(); });
+      var remaining = [];
+      custom.forEach(function(c){
+        var idx = watchTitles.indexOf((c.title || '').toUpperCase());
+        if (idx >= 0 && c.dataUrl && !films[idx].dataUrl){
+          films[idx].dataUrl = c.dataUrl;
+        } else {
+          remaining.push(c);
+        }
+      });
+      localStorage.setItem('cinema-custom', JSON.stringify(remaining));
+    } catch(e){}
+  })();
 
   /* ---- view toggle ---- */
   var stage        = document.getElementById('stage');
@@ -359,6 +379,17 @@ body.dragging .rail{cursor:grabbing}
     t.addEventListener('click', function(){ openCard(i); });
     timeline.appendChild(t);
     return t;
+  });
+
+  /* inject real images into carousel cards */
+  cards.forEach(function(c, i){
+    if (!films[i].dataUrl) return;
+    var m = c.querySelector('.media');
+    m.style.background = '';
+    var img = document.createElement('img');
+    img.src = films[i].dataUrl;
+    img.setAttribute('style','position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none;user-select:none');
+    m.appendChild(img);
   });
 
   function openCard(i){
@@ -424,8 +455,11 @@ body.dragging .rail{cursor:grabbing}
   films.forEach(function(f, i){
     var item = document.createElement('div');
     item.className = 'list-item';
+    var thumbInner = f.dataUrl
+      ? '<img src="'+f.dataUrl+'" style="width:100%;height:100%;object-fit:cover;display:block" alt="">'
+      : '<div class="list-thumb-bg" style="background:'+f.bg+'"></div>';
     item.innerHTML =
-      '<div class="list-thumb"><div class="list-thumb-bg" style="background:'+f.bg+'"></div></div>'
+      '<div class="list-thumb">'+thumbInner+'</div>'
       +'<span class="list-item-title">'+f.title+'</span>';
     item.addEventListener('click', function(){ selectItem(i); });
     listPanel.appendChild(item);
@@ -434,9 +468,16 @@ body.dragging .rail{cursor:grabbing}
 
   function selectItem(i){
     listItems.forEach(function(el, j){ el.classList.toggle('active', j===i); });
-    heroBg.style.background = films[i].bg;
-    heroTitle.innerHTML = films[i].caption;
-    heroSummary.textContent = films[i].summary;
+    var f = films[i];
+    if (f.dataUrl){
+      heroBg.style.background = '';
+      heroBg.innerHTML = '<img src="'+f.dataUrl+'" style="width:100%;height:100%;object-fit:cover;display:block" alt="">';
+    } else {
+      heroBg.innerHTML = '';
+      heroBg.style.background = f.bg;
+    }
+    heroTitle.innerHTML = f.caption;
+    heroSummary.textContent = f.summary;
   }
   selectItem(0);
 
