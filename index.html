@@ -277,8 +277,8 @@ body.dragging{cursor:grabbing}
 .title-input:focus{outline:none;border-bottom-color:var(--amber)}
 .add-submit{
   background:none;border:0;padding:0;cursor:pointer;
-  font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
-  letter-spacing:.03em;color:#b4b4b4;transition:color .3s ease;
+  font-family:var(--display);font-size:clamp(20px,1.8vw,26px);
+  color:#b4b4b4;transition:color .3s ease;line-height:1;
 }
 .add-submit:hover{color:#fff;outline:none}
 
@@ -460,19 +460,13 @@ body.dragging{cursor:grabbing}
   <div class="add-overlay" id="addOverlay">
     <button class="add-close" id="closeAdd">&#x2715;</button>
     <div class="add-panel">
-      <div>
-        <span class="field-label">Photo</span>
-        <div class="pick" id="pickZone">
-          <span class="pick-hint">choose image</span>
-          <img class="pick-preview" id="pickPreview" alt="">
-          <input type="file" id="pickFile" accept="image/*">
-        </div>
+      <div class="pick" id="pickZone">
+        <svg class="pick-hint" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <img class="pick-preview" id="pickPreview" alt="">
+        <input type="file" id="pickFile" accept="image/*">
       </div>
-      <div>
-        <span class="field-label">Title</span>
-        <input class="title-input" id="addTitle" type="text" placeholder="FILM TITLE" maxlength="60">
-      </div>
-      <button class="add-submit" id="addSubmit">add to archive</button>
+      <input class="title-input" id="addTitle" type="text" placeholder="FILM TITLE" maxlength="60">
+      <button class="add-submit" id="addSubmit">&#x2191;</button>
     </div>
   </div>
 
