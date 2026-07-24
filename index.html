@@ -321,24 +321,23 @@ body.dragging{cursor:grabbing}
 #wlListView{position:absolute;inset:0;z-index:1;display:none}
 #wlListView.active{display:flex}
 .wl-list-panel{
-  width:clamp(220px,30vw,360px);flex-shrink:0;
+  width:calc(var(--cw) + clamp(44px,8vw,96px));flex-shrink:0;
   height:100%;overflow-y:auto;
   border-right:1px solid rgba(255,255,255,.08);
-  padding-top:clamp(70px,9vw,110px);
+  padding:clamp(70px,9vw,110px) clamp(22px,4vw,48px) 60px;
   display:flex;flex-direction:column;
+  gap:clamp(20px,2.8vw,36px);
 }
 .wl-list-item{
-  display:flex;align-items:center;
-  gap:clamp(12px,1.4vw,20px);
-  padding:clamp(14px,1.8vw,22px) clamp(22px,3.2vw,48px);
-  border-bottom:1px solid rgba(255,255,255,.06);
-  cursor:pointer;opacity:.42;
-  transition:opacity .3s ease,background .3s ease;
+  position:relative;
+  flex:0 0 var(--ch);width:var(--cw);height:var(--ch);
+  cursor:pointer;opacity:.45;
+  transition:opacity .3s ease;
 }
-.wl-list-item:hover{opacity:.75}
-.wl-list-item.active{opacity:1;background:rgba(255,255,255,.04)}
-.wl-list-thumb{flex-shrink:0;width:clamp(54px,5.5vw,78px);height:clamp(30px,3.2vw,46px);overflow:hidden}
-.wl-list-item-title{font-family:var(--display);font-size:clamp(10px,.9vw,13px);letter-spacing:.06em;color:#fff;line-height:1.25}
+.wl-list-item:hover{opacity:.72}
+.wl-list-item.active{opacity:1}
+.wl-list-item .media{position:absolute;inset:0;overflow:hidden}
+.wl-list-item .caption{position:absolute;left:50%;top:calc(100% - 1.16em);transform:translateX(-50%);font-size:clamp(12px,1.4vw,20px);white-space:nowrap}
 .wl-detail-panel{
   flex:1;min-width:0;height:100%;overflow-y:auto;
   padding:clamp(50px,7vw,90px) 0 60px;
@@ -357,6 +356,14 @@ body.dragging{cursor:grabbing}
   line-height:1.8;color:rgba(255,255,255,.48);letter-spacing:.01em;
   text-align:center;width:calc(100% - clamp(28px,3.5vw,52px)*2);max-width:58ch;
 }
+.wl-hero-summary[contenteditable]{
+  outline:none;cursor:text;
+  border-bottom:1px solid transparent;
+  padding-bottom:4px;
+  transition:border-color .3s ease;
+}
+.wl-hero-summary[contenteditable]:hover{border-bottom-color:rgba(255,255,255,.14)}
+.wl-hero-summary[contenteditable]:focus{border-bottom-color:rgba(255,255,255,.3)}
 .wl-close-btn{
   display:block;background:none;border:0;padding:0;cursor:pointer;text-align:right;
   font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
@@ -591,13 +598,29 @@ body.dragging{cursor:grabbing}
         <div class="wl-hero-bg" id="wlHeroBg"></div>
       </div>
       <h2 class="wl-hero-title" id="wlHeroTitle"></h2>
-      <p class="wl-hero-summary" id="wlHeroSummary"></p>
+      <div class="wl-hero-summary" id="wlHeroSummary" contenteditable="true" spellcheck="false"></div>
     </div>
   </div>
 
   <nav class="corner">
     <button class="wl-close-btn" id="closeWatchlist">ARCHIVE</button>
   </nav>
+
+  <div class="add-corner" id="wlAddCorner">
+    <button id="wlOpenAdd">+</button>
+  </div>
+
+  <div class="add-bar" id="wlAddBar">
+    <span class="add-bar-label">ADD FILM</span>
+    <div class="pick" id="wlPickZone">
+      <svg class="pick-hint" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <img class="pick-preview" id="wlPickPreview" alt="">
+      <input type="file" id="wlPickFile" accept="image/*">
+    </div>
+    <input class="title-input" id="wlAddTitle" type="text" placeholder="FILM TITLE" maxlength="60">
+    <button class="add-submit" id="wlAddSubmit">+</button>
+    <button class="add-close" id="wlCloseAdd">&#x2715;</button>
+  </div>
 </div>
 
 <script>
@@ -736,17 +759,22 @@ body.dragging{cursor:grabbing}
   var wlHeroTitle=document.getElementById('wlHeroTitle');
   var wlHeroSummary=document.getElementById('wlHeroSummary');
 
-  wlFilms.forEach(function(f,i){
+  function wlBuildListItem(f,i){
     var item=document.createElement('div');
     item.className='wl-list-item';
-    var ti=f.dataUrl?'<img src="'+f.dataUrl+'" style="width:100%;height:100%;object-fit:cover;display:block" alt="">':'<div style="width:100%;height:100%;background:'+f.bg+'"></div>';
-    item.innerHTML='<div class="wl-list-thumb">'+ti+'</div><span class="wl-list-item-title">'+f.title+'</span>';
+    var bg=f.dataUrl?'':'background:'+f.bg+';';
+    var img=f.dataUrl?'<img src="'+f.dataUrl+'" style="width:100%;height:100%;object-fit:cover;display:block" alt="">':'';
+    item.innerHTML='<div class="media" style="'+bg+'">'+img+'</div><h2 class="caption">'+f.caption+'</h2>';
     item.addEventListener('click',function(){wlSelectItem(i);});
     wlListPanel.appendChild(item);
     wlListItems.push(item);
-  });
+    return item;
+  }
+  wlFilms.forEach(function(f,i){wlBuildListItem(f,i);});
 
+  var wlCurrentItem=0;
   function wlSelectItem(i){
+    wlCurrentItem=i;
     wlListItems.forEach(function(el,j){el.classList.toggle('active',j===i);});
     var f=wlFilms[i];
     if(f.dataUrl){
@@ -766,8 +794,7 @@ body.dragging{cursor:grabbing}
     wlListItems.forEach(function(el){el.style.opacity='0';});
     wlDetailPanel.style.opacity='0';
     var thumbRects=wlListItems.map(function(el){
-      var t=el.querySelector('.wl-list-thumb');
-      return(t||el).getBoundingClientRect();
+      return el.getBoundingClientRect();
     });
     var done=0;
     wlCards.forEach(function(c,i){
@@ -800,8 +827,7 @@ body.dragging{cursor:grabbing}
   /* ----- FLIP: list → carousel ----- */
   function wlAnimateToCarousel(){
     var thumbRects=wlListItems.map(function(el){
-      var t=el.querySelector('.wl-list-thumb');
-      return(t||el).getBoundingClientRect();
+      return el.getBoundingClientRect();
     });
     wlCarouselView.style.cssText='opacity:0';
     wlListItems.forEach(function(el){el.style.opacity='0';});
@@ -840,7 +866,7 @@ body.dragging{cursor:grabbing}
   var wlDown=false,wlMoved=false,wlSx=0,wlSy=0,wlSTx=0;
   addEventListener('pointerdown',function(e){
     if(!wlStage.classList.contains('visible'))return;
-    if(e.target.closest('.view-toggle')||e.target.closest('#wlTimeline')||e.target.closest('#wlStage .corner'))return;
+    if(e.target.closest('.view-toggle')||e.target.closest('#wlTimeline')||e.target.closest('#wlStage .corner')||e.target.closest('#wlAddCorner')||e.target.closest('#wlAddBar'))return;
     if(wlListView.classList.contains('active'))return;
     wlDown=true;wlMoved=false;wlSx=e.clientX;wlSy=e.clientY;wlSTx=wlTxT;
     document.body.classList.add('dragging');
@@ -876,6 +902,115 @@ body.dragging{cursor:grabbing}
 
   addEventListener('resize',wlMeasure);
   wlMeasure(); wlTxT=-wlLimit; wlTx=wlTxT; wlLoop();
+
+  /* ----- summary editing ----- */
+  var WL_SUMM_KEY='cinema-watchlist-summaries';
+  function wlLoadSummaries(){
+    try{
+      var s=JSON.parse(localStorage.getItem(WL_SUMM_KEY)||'{}');
+      wlFilms.forEach(function(f){if(s[f.title]!==undefined)f.summary=s[f.title];});
+    }catch(e){}
+  }
+  function wlSaveSummary(title,text){
+    try{
+      var s=JSON.parse(localStorage.getItem(WL_SUMM_KEY)||'{}');
+      s[title]=text;
+      localStorage.setItem(WL_SUMM_KEY,JSON.stringify(s));
+    }catch(e){}
+  }
+  wlLoadSummaries();
+  // re-render first item with saved summary
+  wlHeroSummary.textContent=wlFilms[0].summary;
+
+  wlHeroSummary.addEventListener('input',function(){
+    var f=wlFilms[wlCurrentItem];if(!f)return;
+    var text=wlHeroSummary.textContent;
+    f.summary=text;
+    wlSaveSummary(f.title,text);
+    if(wlCards[wlCurrentItem]&&wlCards[wlCurrentItem].dataset.wlCustom){wlSaveCustom();}
+  });
+
+  /* ----- watchlist add feature ----- */
+  var WL_CUSTOM_KEY='cinema-watchlist-custom';
+  var wlPendingUrl='';
+
+  function wlAddCard(dataUrl,titleRaw,summary){
+    var titleHtml=titleRaw.toUpperCase();
+    var cap=titleHtml;
+    var f={title:titleHtml,caption:cap,bg:'linear-gradient(140deg,#111 0%,#1a1a1a 100%)',dataUrl:dataUrl||'',summary:summary||''};
+    wlFilms.push(f);
+    var art=document.createElement('article');
+    art.className='card';art.dataset.wlCustom='1';
+    var bg2=dataUrl?'':'background:linear-gradient(140deg,#111 0%,#1a1a1a 100%);';
+    var img2=dataUrl?'<img src="'+dataUrl+'" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none;user-select:none" alt="">':'';
+    art.innerHTML='<div class="media" style="'+bg2+'">'+img2+'</div><h2 class="caption">'+titleHtml+'</h2>';
+    wlRail.appendChild(art);
+    wlCards.push(art);
+    var idx=wlFilms.length-1;
+    var t=document.createElement('button');
+    t.type='button';t.className='tick';
+    t.innerHTML='<span class="lab">'+titleHtml+'</span>';
+    t.setAttribute('aria-label',titleHtml);
+    (function(ii){t.addEventListener('click',function(){wlOpenCard(ii);});})(idx);
+    wlTimeline.appendChild(t);
+    wlTicks.push(t);
+    wlBuildListItem(f,idx);
+    wlMeasure();
+  }
+
+  function wlSaveCustom(){
+    var custom=[];
+    wlFilms.forEach(function(f,i){
+      if(wlCards[i]&&wlCards[i].dataset.wlCustom){
+        custom.push({dataUrl:f.dataUrl,title:f.title,summary:f.summary});
+      }
+    });
+    try{localStorage.setItem(WL_CUSTOM_KEY,JSON.stringify(custom));}catch(e){}
+  }
+
+  function wlLoadCustom(){
+    try{
+      var saved=JSON.parse(localStorage.getItem(WL_CUSTOM_KEY)||'[]');
+      saved.forEach(function(item){wlAddCard(item.dataUrl,item.title,item.summary||'');});
+    }catch(e){}
+  }
+  wlLoadCustom();
+
+  var wlOpenAddBtn=document.getElementById('wlOpenAdd');
+  var wlAddBar=document.getElementById('wlAddBar');
+  var wlPickFile=document.getElementById('wlPickFile');
+  var wlPickZone=document.getElementById('wlPickZone');
+  var wlPickPrev=document.getElementById('wlPickPreview');
+  var wlTitleIn=document.getElementById('wlAddTitle');
+
+  wlOpenAddBtn.addEventListener('click',function(e){
+    e.stopPropagation();
+    wlAddBar.classList.toggle('open');
+    if(wlAddBar.classList.contains('open'))wlTitleIn.focus();
+  });
+  document.getElementById('wlCloseAdd').addEventListener('click',function(e){
+    e.stopPropagation();
+    wlAddBar.classList.remove('open');
+  });
+  wlPickFile.addEventListener('change',function(){
+    var file=wlPickFile.files[0];if(!file)return;
+    var reader=new FileReader();
+    reader.onload=function(ev){
+      wlPendingUrl=ev.target.result;
+      wlPickPrev.src=wlPendingUrl;
+      wlPickZone.classList.add('has-img');
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('wlAddSubmit').addEventListener('click',function(e){
+    e.stopPropagation();
+    var t=wlTitleIn.value.trim();if(!t)return;
+    wlAddCard(wlPendingUrl,t,'');
+    wlSaveCustom();
+    wlAddBar.classList.remove('open');
+    wlTitleIn.value='';wlPendingUrl='';
+    wlPickPrev.src='';wlPickZone.classList.remove('has-img');wlPickFile.value='';
+  });
 })();
 </script>
 
