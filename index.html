@@ -114,10 +114,11 @@ body.dragging{cursor:grabbing}
 .detail{
   position:absolute;left:50%;bottom:104px;z-index:8;
   transform:translateX(-50%) translateY(10px);
-  display:flex;align-items:center;gap:clamp(16px,2.4vw,34px);
+  display:flex;flex-direction:column;align-items:center;gap:12px;
   opacity:0;pointer-events:none;
   transition:opacity .5s ease,transform .5s cubic-bezier(.25,.46,.45,.94);
 }
+.detail .rates{display:flex;align-items:center;gap:clamp(16px,2.4vw,34px)}
 .stage.is-open .detail{opacity:1;transform:translateX(-50%);pointer-events:auto}
 .date{
   width:132px;padding:0 0 6px;
@@ -224,47 +225,35 @@ body.dragging{cursor:grabbing}
 }
 .add-corner button:hover,.add-corner button:focus-visible{color:#fff;outline:none}
 
-/* ---------- add overlay ---------- */
-.add-overlay{
-  position:absolute;inset:0;z-index:20;
-  background:rgba(7,7,7,.90);
-  display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;
-  transition:opacity .3s ease;
+/* ---------- add bar (slides in from top) ---------- */
+.add-bar{
+  position:absolute;left:0;right:0;top:0;z-index:20;
+  height:clamp(54px,6vw,68px);
+  background:#070707;
+  border-bottom:1px solid rgba(255,255,255,.11);
+  display:flex;align-items:center;
+  padding:0 clamp(20px,3.6vw,52px);
+  gap:clamp(18px,2.8vw,40px);
+  transform:translateY(-100%);
+  transition:transform .35s cubic-bezier(.25,.46,.45,.94);
+  pointer-events:none;
 }
-.add-overlay.open{opacity:1;pointer-events:auto}
-.add-close{
-  position:absolute;right:clamp(20px,3.6vw,52px);top:clamp(20px,3vw,44px);
-  background:none;border:0;padding:0;cursor:pointer;
+.add-bar.open{transform:translateY(0);pointer-events:auto}
+.add-bar-label{
   font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
-  letter-spacing:.03em;color:#b4b4b4;transition:color .3s ease;
-}
-.add-close:hover{color:#fff;outline:none}
-.add-panel{
-  display:flex;flex-direction:column;gap:28px;align-items:center;
-}
-.add-title{
-  font-family:var(--display);font-size:clamp(15px,1.3vw,20px);
-  letter-spacing:.03em;font-weight:400;color:#fff;text-align:center;
-}
-.add-panel .field-label{
-  display:block;
-  font-family:var(--display);font-size:9px;letter-spacing:.2em;
-  color:#8e8e8e;text-transform:uppercase;margin-bottom:10px;text-align:center;
+  letter-spacing:.03em;color:#fff;white-space:nowrap;flex-shrink:0;user-select:none;
 }
 .pick{
-  width:clamp(200px,28vw,380px);
-  height:clamp(110px,15vw,208px);
-  border:1px solid rgba(255,255,255,.14);
+  flex-shrink:0;
+  width:clamp(50px,5vw,72px);
+  height:clamp(28px,3vw,40px);
+  border:1px solid rgba(255,255,255,.18);
   display:flex;align-items:center;justify-content:center;
   cursor:pointer;position:relative;overflow:hidden;
   transition:border-color .3s ease;
 }
-.pick:hover{border-color:rgba(255,255,255,.4)}
-.pick-hint{
-  font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
-  letter-spacing:.03em;color:#b4b4b4;pointer-events:none;
-}
+.pick:hover{border-color:rgba(255,255,255,.5)}
+.pick-hint{color:#b4b4b4;pointer-events:none;flex-shrink:0}
 .pick-preview{
   position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;
 }
@@ -272,20 +261,26 @@ body.dragging{cursor:grabbing}
 .pick.has-img .pick-hint{display:none}
 .pick input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 .title-input{
-  width:clamp(200px,28vw,380px);
-  padding:0 0 6px;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.18);
+  flex:1;min-width:0;
+  padding:0 0 5px;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.18);
   font-family:var(--display);font-size:clamp(13px,1.05vw,16px);letter-spacing:.06em;
-  color:#fff;text-align:center;text-transform:uppercase;
+  color:#fff;text-align:left;text-transform:uppercase;
   transition:border-color .3s ease;
 }
 .title-input::placeholder{color:rgba(255,255,255,.26)}
 .title-input:focus{outline:none;border-bottom-color:var(--amber)}
 .add-submit{
-  background:none;border:0;padding:0;cursor:pointer;
-  font-family:var(--display);font-size:clamp(20px,1.8vw,26px);
+  background:none;border:0;padding:0;cursor:pointer;flex-shrink:0;
+  font-family:var(--display);font-size:clamp(20px,1.8vw,28px);
   color:#b4b4b4;transition:color .3s ease;line-height:1;
 }
 .add-submit:hover{color:#fff;outline:none}
+.add-close{
+  background:none;border:0;padding:0;cursor:pointer;flex-shrink:0;
+  font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
+  letter-spacing:.03em;color:#b4b4b4;transition:color .3s ease;
+}
+.add-close:hover{color:#fff;outline:none}
 
 </style>
 </head>
@@ -445,11 +440,12 @@ body.dragging{cursor:grabbing}
 
 
   <div class="detail">
-    <input class="date" type="text" maxlength="18" placeholder="add date" aria-label="Date watched">
-    <span class="rule"></span>
-    <div class="rate"><b>SEB</b><div class="stars" data-who="seb"></div></div>
-    <span class="rule"></span>
-    <div class="rate"><b>ZAY</b><div class="stars" data-who="zay"></div></div>
+    <input class="date" type="text" maxlength="18" placeholder="DATE" aria-label="Date watched">
+    <div class="rates">
+      <div class="rate"><b>SEB</b><div class="stars" data-who="seb"></div></div>
+      <span class="rule"></span>
+      <div class="rate"><b>ZAY</b><div class="stars" data-who="zay"></div></div>
+    </div>
   </div>
 
   <div class="timeline" role="tablist" aria-label="Films in order"></div>
@@ -462,18 +458,16 @@ body.dragging{cursor:grabbing}
     <button id="openAdd">+</button>
   </div>
 
-  <div class="add-overlay" id="addOverlay">
-    <button class="add-close" id="closeAdd">&#x2715;</button>
-    <div class="add-panel">
-      <h2 class="add-title">ADD FILM</h2>
-      <div class="pick" id="pickZone">
-        <svg class="pick-hint" xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <img class="pick-preview" id="pickPreview" alt="">
-        <input type="file" id="pickFile" accept="image/*">
-      </div>
-      <input class="title-input" id="addTitle" type="text" placeholder="FILM TITLE" maxlength="60">
-      <button class="add-submit" id="addSubmit">+</button>
+  <div class="add-bar" id="addOverlay">
+    <span class="add-bar-label">ADD FILM</span>
+    <div class="pick" id="pickZone">
+      <svg class="pick-hint" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <img class="pick-preview" id="pickPreview" alt="">
+      <input type="file" id="pickFile" accept="image/*">
     </div>
+    <input class="title-input" id="addTitle" type="text" placeholder="FILM TITLE" maxlength="60">
+    <button class="add-submit" id="addSubmit">+</button>
+    <button class="add-close" id="closeAdd">&#x2715;</button>
   </div>
 
 </main>
@@ -595,7 +589,7 @@ body.dragging{cursor:grabbing}
   /* ---------- drag vs click ---------- */
   var down = false, moved = false, sx = 0, sy = 0, sTx = 0;
   addEventListener('pointerdown', function(e){
-    if (e.target.closest('.detail') || e.target.closest('.timeline') || e.target.closest('.corner') || e.target.closest('.add-corner') || e.target.closest('.add-overlay')) return;
+    if (e.target.closest('.detail') || e.target.closest('.timeline') || e.target.closest('.corner') || e.target.closest('.add-corner') || e.target.closest('.add-bar')) return;
     down = true; moved = false; sx = e.clientX; sy = e.clientY; sTx = txT;
     document.body.classList.add('dragging');
   });
