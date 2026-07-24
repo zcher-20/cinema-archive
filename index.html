@@ -209,8 +209,78 @@ body.dragging{cursor:grabbing}
 /* ================= stills ================= */
 .still{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;-webkit-user-drag:none;user-select:none}
 
+/* ---------- add button (top-left) ---------- */
+.add-corner{
+  position:absolute;left:clamp(20px,3.6vw,52px);top:clamp(20px,3vw,44px);z-index:6;
+}
+.add-corner button{
+  background:none;border:0;padding:0;cursor:pointer;
+  font-family:var(--display);
+  font-size:clamp(13px,1.05vw,16px);
+  letter-spacing:.03em;
+  color:#b4b4b4;
+  transition:color .3s ease;
+}
+.add-corner button:hover,.add-corner button:focus-visible{color:#fff;outline:none}
 
-
+/* ---------- add overlay ---------- */
+.add-overlay{
+  position:absolute;inset:0;z-index:20;
+  background:rgba(7,7,7,.90);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
+}
+.add-overlay.open{opacity:1;pointer-events:auto}
+.add-close{
+  position:absolute;right:clamp(20px,3.6vw,52px);top:clamp(20px,3vw,44px);
+  background:none;border:0;padding:0;cursor:pointer;
+  font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
+  letter-spacing:.03em;color:#b4b4b4;transition:color .3s ease;
+}
+.add-close:hover{color:#fff;outline:none}
+.add-panel{
+  display:flex;flex-direction:column;gap:28px;align-items:center;
+}
+.add-panel .field-label{
+  display:block;
+  font-family:var(--display);font-size:9px;letter-spacing:.2em;
+  color:#8e8e8e;text-transform:uppercase;margin-bottom:10px;text-align:center;
+}
+.pick{
+  width:clamp(200px,28vw,380px);
+  height:clamp(110px,15vw,208px);
+  border:1px solid rgba(255,255,255,.14);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:border-color .3s ease;
+}
+.pick:hover{border-color:rgba(255,255,255,.4)}
+.pick-hint{
+  font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
+  letter-spacing:.03em;color:#b4b4b4;pointer-events:none;
+}
+.pick-preview{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;
+}
+.pick.has-img .pick-preview{display:block}
+.pick.has-img .pick-hint{display:none}
+.pick input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.title-input{
+  width:clamp(200px,28vw,380px);
+  padding:0 0 6px;background:none;border:0;border-bottom:1px solid rgba(255,255,255,.18);
+  font-family:var(--display);font-size:clamp(13px,1.05vw,16px);letter-spacing:.06em;
+  color:#fff;text-align:center;text-transform:uppercase;
+  transition:border-color .3s ease;
+}
+.title-input::placeholder{color:rgba(255,255,255,.26)}
+.title-input:focus{outline:none;border-bottom-color:var(--amber)}
+.add-submit{
+  background:none;border:0;padding:0;cursor:pointer;
+  font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
+  letter-spacing:.03em;color:#b4b4b4;transition:color .3s ease;
+}
+.add-submit:hover{color:#fff;outline:none}
 
 </style>
 </head>
@@ -382,6 +452,30 @@ body.dragging{cursor:grabbing}
   <nav class="corner">
     <a href="#">SEBASTIEN x ZAYNEB</a>
   </nav>
+
+  <div class="add-corner">
+    <button id="openAdd">+</button>
+  </div>
+
+  <div class="add-overlay" id="addOverlay">
+    <button class="add-close" id="closeAdd">&#x2715;</button>
+    <div class="add-panel">
+      <div>
+        <span class="field-label">Photo</span>
+        <div class="pick" id="pickZone">
+          <span class="pick-hint">choose image</span>
+          <img class="pick-preview" id="pickPreview" alt="">
+          <input type="file" id="pickFile" accept="image/*">
+        </div>
+      </div>
+      <div>
+        <span class="field-label">Title</span>
+        <input class="title-input" id="addTitle" type="text" placeholder="FILM TITLE" maxlength="60">
+      </div>
+      <button class="add-submit" id="addSubmit">add to archive</button>
+    </div>
+  </div>
+
 </main>
 
 <div class="grain"></div>
@@ -436,6 +530,7 @@ body.dragging{cursor:grabbing}
       var who = box.dataset.who, v = +b.dataset.v;
       state[active][who] = (state[active][who] === v) ? 0 : v;
       paint(box, state[active][who]);
+      saveCustom();
     });
     box.addEventListener('mousemove', function(e){
       var b = e.target.closest('button'); if (!b) return;
@@ -457,6 +552,7 @@ body.dragging{cursor:grabbing}
     if (active < 0) return;
     state[active].date = dateEl.value;
     label(active);
+    saveCustom();
   });
 
   /* ---------- timeline ---------- */
@@ -499,7 +595,7 @@ body.dragging{cursor:grabbing}
   /* ---------- drag vs click ---------- */
   var down = false, moved = false, sx = 0, sy = 0, sTx = 0;
   addEventListener('pointerdown', function(e){
-    if (e.target.closest('.detail') || e.target.closest('.timeline') || e.target.closest('.corner')) return;
+    if (e.target.closest('.detail') || e.target.closest('.timeline') || e.target.closest('.corner') || e.target.closest('.add-corner') || e.target.closest('.add-overlay')) return;
     down = true; moved = false; sx = e.clientX; sy = e.clientY; sTx = txT;
     document.body.classList.add('dragging');
   });
@@ -529,6 +625,99 @@ body.dragging{cursor:grabbing}
     if (e.target === dateEl) return;
     if (e.key === 'ArrowRight'){ active >= 0 ? open(Math.min(cards.length - 1, active + 1)) : txT = clamp(txT - 220); }
     if (e.key === 'ArrowLeft'){  active >= 0 ? open(Math.max(0, active - 1))                : txT = clamp(txT + 220); }
+  });
+
+  /* ---------- add film ---------- */
+  var LS_KEY = 'cinema-custom';
+
+  function addCard(dataUrl, titleRaw){
+    var titleHtml = titleRaw.toUpperCase();
+    var art = document.createElement('article');
+    art.className = 'card';
+    art.dataset.custom = '1';
+    art.innerHTML = '<div class="media"><img class="still" src="' + dataUrl + '" alt="' + titleHtml + '"></div>'
+                  + '<h2 class="caption">' + titleHtml + '</h2>';
+    rail.appendChild(art);
+    cards.push(art);
+    var idx = cards.length - 1;
+    state.push({ title: titleHtml, date: '', seb: 0, zay: 0 });
+    var t = document.createElement('button');
+    t.type = 'button'; t.className = 'tick';
+    t.innerHTML = '<span class="lab"></span>';
+    (function(i){ t.addEventListener('click', function(){ open(i); }); })(idx);
+    timeline.appendChild(t);
+    ticks.push(t);
+    label(idx);
+    measure();
+  }
+
+  function saveCustom(){
+    var custom = [];
+    for (var i = 0; i < cards.length; i++){
+      if (!cards[i].dataset.custom) continue;
+      var img = cards[i].querySelector('.still');
+      if (!img) continue;
+      custom.push({ dataUrl: img.src, title: state[i].title, date: state[i].date, seb: state[i].seb, zay: state[i].zay });
+    }
+    try { localStorage.setItem(LS_KEY, JSON.stringify(custom)); } catch(e){}
+  }
+
+  function loadCustom(){
+    try {
+      var saved = JSON.parse(localStorage.getItem(LS_KEY) || '[]');
+      saved.forEach(function(item){
+        addCard(item.dataUrl, item.title);
+        var i = cards.length - 1;
+        state[i].date = item.date || '';
+        state[i].seb  = item.seb  || 0;
+        state[i].zay  = item.zay  || 0;
+        label(i);
+      });
+    } catch(e){}
+  }
+  loadCustom();
+
+  var overlay   = document.getElementById('addOverlay');
+  var pickFile  = document.getElementById('pickFile');
+  var pickZone  = document.getElementById('pickZone');
+  var pickPrev  = document.getElementById('pickPreview');
+  var titleIn   = document.getElementById('addTitle');
+  var pendingUrl = '';
+
+  document.getElementById('openAdd').addEventListener('click', function(e){
+    e.stopPropagation();
+    overlay.classList.add('open');
+    titleIn.focus();
+  });
+  document.getElementById('closeAdd').addEventListener('click', function(e){
+    e.stopPropagation();
+    overlay.classList.remove('open');
+  });
+  overlay.addEventListener('click', function(e){
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+  pickFile.addEventListener('change', function(){
+    var file = pickFile.files[0]; if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(ev){
+      pendingUrl = ev.target.result;
+      pickPrev.src = pendingUrl;
+      pickZone.classList.add('has-img');
+    };
+    reader.readAsDataURL(file);
+  });
+  document.getElementById('addSubmit').addEventListener('click', function(e){
+    e.stopPropagation();
+    var t = titleIn.value.trim();
+    if (!pendingUrl || !t) return;
+    addCard(pendingUrl, t);
+    saveCustom();
+    overlay.classList.remove('open');
+    titleIn.value = '';
+    pendingUrl = '';
+    pickPrev.src = '';
+    pickZone.classList.remove('has-img');
+    pickFile.value = '';
   });
 
   addEventListener('resize', measure);
