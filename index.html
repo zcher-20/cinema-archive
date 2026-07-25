@@ -1212,13 +1212,10 @@ body.dragging{cursor:grabbing}
           var localG = g, localItem = wlListItems[i];
           localG.style.transition = 'opacity .12s ease';
           localG.style.opacity = '0';
+          if (localItem) { localItem.style.transition = 'opacity .12s ease'; localItem.style.opacity = String(targetOp); }
           setTimeout(function() {
             localG.remove();
-            if (localItem) {
-              localItem.style.transition = 'none';
-              localItem.style.opacity = String(targetOp);
-              requestAnimationFrame(function() { if (localItem) { localItem.style.transition = ''; localItem.style.opacity = ''; } });
-            }
+            if (localItem) { localItem.style.transition = ''; localItem.style.opacity = ''; }
             if (++done === wlCards.length) { wlCarouselView.style.display = 'none'; }
           }, 130);
         }, 600 + i * 40);
