@@ -666,7 +666,7 @@ body.dragging{cursor:grabbing}
     })
     .catch(function(e) {
       console.error('Failed to load from Supabase:', e);
-      loadingEl.querySelector('span').textContent = 'Could not connect. Check console.';
+      loadingEl.querySelector('span').textContent = 'Error: ' + (e && e.message ? e.message : String(e));
     });
   });
 
