@@ -719,11 +719,11 @@ body.dragging{cursor:grabbing}
       measure();
     }
 
-    var ticks = [];
-    films.forEach(function(f, i) { addArchiveCardFromFilm(f, i); });
-
     /* ---- Physics ---- */
     var tx = 0, txT = 0, ty = 0, tyT = 0, limit = 0, active = -1;
+
+    var ticks = [];
+    films.forEach(function(f, i) { addArchiveCardFromFilm(f, i); });
 
     function clamp(v) { return Math.max(-limit, Math.min(limit, v)); }
     function measure() {
@@ -1019,6 +1019,10 @@ body.dragging{cursor:grabbing}
       wlMeasure();
     }
 
+    /* ---- Carousel physics ---- */
+    var WL_EDGE = 60, wlStill = matchMedia('(prefers-reduced-motion:reduce)').matches;
+    var wlTx = 0, wlTxT = 0, wlTy = 0, wlTyT = 0, wlLimit = 0, wlActiveCard = -1;
+
     filmData.forEach(function(f, i) { wlAddCardFromFilm(wlFilms[i]); });
 
     /* ---- Open / close watchlist ---- */
@@ -1050,9 +1054,6 @@ body.dragging{cursor:grabbing}
       wlAnimateToList();
     });
 
-    /* ---- Carousel physics ---- */
-    var WL_EDGE = 60, wlStill = matchMedia('(prefers-reduced-motion:reduce)').matches;
-    var wlTx = 0, wlTxT = 0, wlTy = 0, wlTyT = 0, wlLimit = 0, wlActiveCard = -1;
     function wlClamp(v) { return Math.max(-wlLimit, Math.min(wlLimit, v)); }
     function wlMeasure() {
       wlLimit = Math.max(0, (wlRail.scrollWidth - innerWidth) / 2 + WL_EDGE);
