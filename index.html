@@ -364,6 +364,7 @@ body.dragging{cursor:grabbing}
 }
 .wl-hero-summary[contenteditable]:hover{border-bottom-color:rgba(255,255,255,.14)}
 .wl-hero-summary[contenteditable]:focus{border-bottom-color:rgba(255,255,255,.3)}
+#wlStage .corner{bottom:auto;top:clamp(20px,3vw,44px);}
 .wl-close-btn{
   display:block;background:none;border:0;padding:0;cursor:pointer;text-align:right;
   font-family:var(--display);font-size:clamp(13px,1.05vw,16px);
@@ -791,74 +792,74 @@ body.dragging{cursor:grabbing}
     var cardRects=wlCards.map(function(c){return c.getBoundingClientRect();});
     wlListView.classList.add('active');
     wlCarouselView.style.cssText='opacity:0;pointer-events:none';
-    wlListItems.forEach(function(el){var m=el.querySelector('.media');if(m)m.style.opacity='0';});
+    wlListItems.forEach(function(el){el.style.opacity='0';});
     wlDetailPanel.style.opacity='0';
-    var thumbRects=wlListItems.map(function(el){
-      return el.getBoundingClientRect();
-    });
+    var thumbRects=wlListItems.map(function(el){return el.getBoundingClientRect();});
     var done=0;
     wlCards.forEach(function(c,i){
-      var fr=cardRects[i],to=thumbRects[i],f=wlFilms[i];
-      var g=document.createElement('div');
-      g.style.cssText='position:fixed;z-index:200;left:0;top:0;pointer-events:none;will-change:transform;overflow:hidden;'
-        +'width:'+fr.width+'px;height:'+fr.height+'px;transform:translate('+fr.left+'px,'+fr.top+'px)';
-      if(f&&f.dataUrl){var ig=document.createElement('img');ig.src=f.dataUrl;ig.style.cssText='width:100%;height:100%;object-fit:cover;display:block';g.appendChild(ig);}
-      else if(f){g.style.background=f.bg;}
+      var fr=cardRects[i],to=thumbRects[i];
+      /* clone the full card (image + caption) so text travels with the image */
+      var g=c.cloneNode(true);
+      g.classList.remove('is-active');
+      g.style.cssText='position:fixed;z-index:200;left:0;top:0;pointer-events:none;will-change:transform;'
+        +'overflow:visible;flex:none;transition:none;'
+        +'width:'+fr.width+'px;height:'+fr.height+'px;'
+        +'transform:translate('+fr.left+'px,'+fr.top+'px);transform-origin:0 0;';
+      var gm=g.querySelector('.media');if(gm){gm.style.filter='';gm.style.opacity='';}
+      var gc=g.querySelector('.caption');if(gc){gc.style.opacity='';gc.style.transform='translateX(-50%)';}
       document.body.appendChild(g);
       requestAnimationFrame(function(){requestAnimationFrame(function(){
         var sx=to.width/fr.width,sy=to.height/fr.height;
-        g.style.transition='transform .55s cubic-bezier(.25,.46,.45,.94)';
-        g.style.transformOrigin='0 0';
+        g.style.transition='transform .52s cubic-bezier(.25,.46,.45,.94)';
         g.style.transform='translate('+to.left+'px,'+to.top+'px) scale('+sx+','+sy+')';
       });});
       setTimeout(function(){
         g.remove();
-        if(wlListItems[i]){var m=wlListItems[i].querySelector('.media');if(m)m.style.opacity='';}
+        if(wlListItems[i])wlListItems[i].style.opacity='';
         if(++done===wlCards.length){wlCarouselView.style.cssText='display:none';}
-      },600+i*50);
+      },580+i*40);
     });
     setTimeout(function(){
       wlDetailPanel.style.transition='opacity .4s ease';
       wlDetailPanel.style.opacity='1';
       setTimeout(function(){wlDetailPanel.style.transition='';},420);
-    },320);
+    },280);
   }
 
   /* ----- FLIP: list → carousel ----- */
   function wlAnimateToCarousel(){
-    var thumbRects=wlListItems.map(function(el){
-      return el.getBoundingClientRect();
-    });
+    var thumbRects=wlListItems.map(function(el){return el.getBoundingClientRect();});
     wlCarouselView.style.cssText='opacity:0';
-    wlListItems.forEach(function(el){var m=el.querySelector('.media');if(m)m.style.opacity='0';});
+    wlListItems.forEach(function(el){el.style.opacity='0';});
     wlDetailPanel.style.opacity='0';
     wlDetailPanel.style.transition='';
     var cardRects=wlCards.map(function(c){return c.getBoundingClientRect();});
     var done=0;
     wlListItems.forEach(function(el,i){
-      var fr=thumbRects[i],to=cardRects[i],f=wlFilms[i];
-      var g=document.createElement('div');
-      g.style.cssText='position:fixed;z-index:200;left:0;top:0;pointer-events:none;will-change:transform;overflow:hidden;'
-        +'width:'+fr.width+'px;height:'+fr.height+'px;transform:translate('+fr.left+'px,'+fr.top+'px)';
-      if(f&&f.dataUrl){var ig=document.createElement('img');ig.src=f.dataUrl;ig.style.cssText='width:100%;height:100%;object-fit:cover;display:block';g.appendChild(ig);}
-      else if(f){g.style.background=f.bg;}
+      var fr=thumbRects[i],to=cardRects[i];
+      /* clone the full list item (image + caption) so text travels with the image */
+      var g=el.cloneNode(true);
+      g.style.cssText='position:fixed;z-index:200;left:0;top:0;pointer-events:none;will-change:transform;'
+        +'overflow:visible;flex:none;opacity:1;transition:none;'
+        +'width:'+fr.width+'px;height:'+fr.height+'px;'
+        +'transform:translate('+fr.left+'px,'+fr.top+'px);transform-origin:0 0;';
+      var gm=g.querySelector('.media');if(gm)gm.style.opacity='';
       document.body.appendChild(g);
       requestAnimationFrame(function(){requestAnimationFrame(function(){
         var sx=to.width/fr.width,sy=to.height/fr.height;
-        g.style.transition='transform .55s cubic-bezier(.25,.46,.45,.94)';
-        g.style.transformOrigin='0 0';
+        g.style.transition='transform .52s cubic-bezier(.25,.46,.45,.94)';
         g.style.transform='translate('+to.left+'px,'+to.top+'px) scale('+sx+','+sy+')';
       });});
       setTimeout(function(){
         g.remove();
         if(++done===wlListItems.length){
           wlListView.classList.remove('active');
-          wlListItems.forEach(function(el){var m=el.querySelector('.media');if(m)m.style.opacity='';});
+          wlListItems.forEach(function(el){el.style.opacity='';});
           wlCarouselView.style.transition='opacity .35s ease';
           wlCarouselView.style.opacity='1';
           setTimeout(function(){wlCarouselView.style.cssText='';},360);
         }
-      },580+i*50);
+      },580+i*40);
     });
   }
 
