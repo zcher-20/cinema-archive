@@ -1030,7 +1030,7 @@ body.dragging{cursor:grabbing}
       e.stopPropagation();
       archiveStage.classList.add('behind');
       wlStage.classList.add('visible');
-      wlMeasure(); wlTxT = -wlLimit; wlTx = wlTxT;
+      wlMeasure(); wlTxT = wlLimit; wlTx = wlTxT;
     });
     document.getElementById('closeWatchlist').addEventListener('click', function() {
       wlStage.classList.remove('visible');
