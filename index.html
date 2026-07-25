@@ -96,7 +96,7 @@ body.dragging{cursor:grabbing}
   font-family:var(--display);
   font-size:clamp(15px,2vw,26px);
   line-height:1.05;letter-spacing:-.005em;
-  text-align:center;white-space:nowrap;
+  text-align:center;white-space:normal;width:100%;
   text-shadow:0 2px 18px rgba(0,0,0,.8);
   pointer-events:none;
 }
@@ -360,7 +360,7 @@ body.dragging{cursor:grabbing}
 .wl-list-item:hover{opacity:.72}
 .wl-list-item.active{opacity:1}
 .wl-list-item .media{position:absolute;inset:0;overflow:hidden}
-.wl-list-item .caption{position:absolute;left:50%;top:calc(100% - 1.16em);transform:translateX(-50%);white-space:nowrap}
+.wl-list-item .caption{position:absolute;left:50%;top:calc(100% - 2.2em);transform:translateX(-50%);white-space:normal;width:100%;text-align:center}
 .wl-detail-panel{
   flex:1;min-width:0;height:100%;
   display:flex;flex-direction:column;align-items:center;justify-content:center;
